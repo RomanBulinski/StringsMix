@@ -8,9 +8,26 @@ public class Main {
         Map<Character, List<String>> mapFromS1 = getMapFromS1(s1);
         Map<Character, List<String>> mapS1addS2 = getmapS1addS2(mapFromS1, s2);
         Collection<List<String>> sttisticOfLetter =  mapS1addS2.values();
-        String res = sttisticOfLetter.stream().filter(n -> (n.get(0)+n.get(0)).length() > 2 ).collect(Collectors.toList()).toString();
+
+        String res = sttisticOfLetter.stream()
+                .filter(n -> (n.get(0)+n.get(0)).length() > 2 )
+                .map(m->listToString(m))
+                .collect(Collectors.joining( "/" ));
 
         return res;
+    }
+
+
+    private static String listToString(List<String> listOfStrings){
+        String result="";
+        String fromS1 = listOfStrings.get(0);
+        String fromS2 = listOfStrings.get(1);
+        if( fromS1.length()>fromS2.length() ){
+            result+="1:"+fromS1;
+        }else if(fromS1.length()<fromS2.length() ){
+            result+="2:"+fromS2;
+        }
+        return result;
     }
 
     private static Map<Character, List<String>> getmapS1addS2(Map<Character, List<String>> mapFromS1, String s2) {
@@ -56,6 +73,10 @@ public class Main {
         }
         return charactersMap;
     }
+
+
+
+
 
 
     private static String toPartStream(List<Object> inputList) {

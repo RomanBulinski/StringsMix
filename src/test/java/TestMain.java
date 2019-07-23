@@ -6,7 +6,6 @@ public class TestMain {
 
     @Test
     public void lowerLetterTest(){
-
         String s1="A aaaa bb c";
         String s2 = "& aaa bbb c d";
         assertEquals("1:aaaa/2:bbb",Main.mix(s1, s2) );
