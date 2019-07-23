@@ -1,51 +1,79 @@
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.lang.Character.isLetter;
+
 public class Main {
 
     public static String mix(String s1, String s2) {
-
         Map<Character, List<String>> mapFromS1 = getMapFromS1(s1);
         Map<Character, List<String>> mapS1addS2 = getmapS1addS2(mapFromS1, s2);
-        Collection<List<String>> sttisticOfLetter =  mapS1addS2.values();
+        Collection <List<String>> statisticOfLetter =  mapS1addS2.values();
+        ArrayList<List<String>> listOfArrays = new ArrayList<>(statisticOfLetter);
 
-        String res = sttisticOfLetter.stream()
-                .filter(n -> (n.get(0)+n.get(0)).length() > 2 )
+        for(int i =listOfArrays.size()-1; i>=0;i--){
+            List<String> tempArr = listOfArrays.get(i);
+            if( tempArr.size()==1 && tempArr.get(0).length()==1 ){
+                listOfArrays.remove(i);
+            }
+        }
+
+        Comparator<String> compByThird = (aName, bName) -> aName.charAt(2) - bName.charAt(2);
+        Comparator<String> compByFirst = (aName, bName) -> aName.charAt(0) - bName.charAt(0);
+        Comparator<String> compByLength = (aName, bName) -> bName.length() - aName.length();
+
+        String res = statisticOfLetter.stream()
                 .map(m->listToString(m))
+                .filter(s->s.length()>1)
+                .sorted(compByThird)
+                .sorted(compByFirst)
+                .sorted(compByLength)
                 .collect(Collectors.joining( "/" ));
 
         return res;
     }
 
-
     private static String listToString(List<String> listOfStrings){
         String result="";
-        String fromS1 = listOfStrings.get(0);
-        String fromS2 = listOfStrings.get(1);
-        if( fromS1.length()>fromS2.length() ){
-            result+="1:"+fromS1;
-        }else if(fromS1.length()<fromS2.length() ){
-            result+="2:"+fromS2;
+        if(listOfStrings.size()==1 && listOfStrings.get(0).length()>3){
+            result+= listOfStrings.get(0);
+        }else if(listOfStrings.size()==2){
+            String fromS1 = listOfStrings.get(0);
+            String fromS2 = listOfStrings.get(1);
+            if( fromS1.length()>fromS2.length() ){
+                result+=fromS1;
+            }else if(fromS1.length()<fromS2.length() ){
+                result+=fromS2;
+            }else if(fromS1.length()==fromS2.length() && fromS1.length()>3){
+                result+="=:"+fromS2.substring(2);
+            }
         }
         return result;
     }
 
     private static Map<Character, List<String>> getmapS1addS2(Map<Character, List<String>> mapFromS1, String s2) {
-
         Map<Character, List<String>> resultMap = mapFromS1;
-
         for (int i = 0; i < s2.length(); i++) {
             if (resultMap.containsKey(s2.charAt(i))) {
                 List<String> temListString = resultMap.get(s2.charAt(i));
-                if (temListString.size() == 1) {
-                    temListString.add(String.valueOf(s2.charAt(i)));
+                if (temListString.size() == 1 &&  String.valueOf( temListString.get(0).charAt(0) ).equals("1") ) {
+                    temListString.add("2:"+s2.charAt(i));
                 } else if (temListString.size() == 2) {
                     String temS = temListString.get(1);
                     String temR = temS + s2.charAt(i);
                     temListString.remove(1);
                     temListString.add(temR);
+                }else if(temListString.size() == 1 &&  String.valueOf( temListString.get(0).charAt(0) ).equals("2") ){
+                    String temS = temListString.get(0);
+                    String temR = temS + s2.charAt(i);
+                    temListString.remove(0);
+                    temListString.add(temR);
                 }
                 resultMap.put(s2.charAt(i), temListString );
+            }else if(!resultMap.containsKey(s2.charAt(i)) && isLetter(s2.charAt(i))){
+                List<String>  stringList = new ArrayList<>();
+                stringList.add("2:"+s2.charAt(i));
+                resultMap.put( s2.charAt(i), stringList);
             }
         }
         return resultMap;
@@ -59,7 +87,7 @@ public class Main {
             List<String> temList = new ArrayList<>();
             if (Character.isLowerCase(temChar)) {
                 if (!charactersMap.containsKey(temChar)) {
-                    temList.add(String.valueOf(temChar));
+                    temList.add("1:"+String.valueOf(temChar));
                     charactersMap.put(temChar, temList);
                 } else if (charactersMap.containsKey(temChar)) {
                     List<String> stringList = charactersMap.get(temChar);
@@ -72,51 +100,6 @@ public class Main {
             }
         }
         return charactersMap;
-    }
-
-
-
-
-
-
-    private static String toPartStream(List<Object> inputList) {
-        StringBuilder temSB = new StringBuilder();
-        temSB.append(inputList.get(2) + ":");
-        for (int j = 0; j < (int) inputList.get(0); j++) {
-            temSB.append(inputList.get(1));
-        }
-        return temSB.append("/").toString();
-    }
-
-    private static Map<Character, List<Object>> getCharacterIntegerMap(String s, int id) {
-
-        int stringId = 0;
-        if (id == 1) {
-            stringId = 1;
-        } else if (id == 2) {
-            stringId = 2;
-        }
-
-        Map<Character, List<Object>> mapForString = new HashMap<>();
-        for (int i = 0; i < s.length(); i++) {
-            char temChar = s.charAt(i);
-            if (Character.isLowerCase(temChar)) {
-                if (!mapForString.keySet().contains(temChar)) {
-                    List<Object> tempList = new ArrayList<>();
-                    tempList.add(1);
-                    tempList.add(temChar);
-                    tempList.add(stringId);
-                    mapForString.put(temChar, tempList);
-                } else if (mapForString.keySet().contains(temChar)) {
-                    List<Object> tempList = mapForString.get(temChar);
-                    int tempAmount = (int) tempList.get(0);
-                    tempList.remove(0);
-                    tempList.add(0, tempAmount + 1);
-                    mapForString.put(temChar, tempList);
-                }
-            }
-        }
-        return mapForString;
     }
 
 
